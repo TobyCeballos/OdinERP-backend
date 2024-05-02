@@ -1,7 +1,7 @@
 {
-  "name": "server",
-  "version": "1.0.0",
-  "description": "",
+  "name": "odinserver",
+  "version": "2.3.0",
+  "description": "OdinERP",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "start": "node index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Tobias Ceballos",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",

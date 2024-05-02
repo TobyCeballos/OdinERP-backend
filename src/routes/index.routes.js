@@ -5,7 +5,7 @@ const router = Router()
 
 router.get("/", (req, res) => {
   res.json({
-    message: "Welcome to my Products API",
+    message: "The OdinServer is successfully connected",
     name: pkg.name,
     version: pkg.version,
     description: pkg.description,

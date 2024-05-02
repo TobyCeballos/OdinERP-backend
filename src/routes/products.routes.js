@@ -19,6 +19,7 @@ router.get("/search/:data",verifyToken, searchProducts);
 
 router.post("/", verifyToken, createProduct);
 
+
 router.put("/:productId", verifyToken, updateProductById);
 
 router.delete("/:productId", [verifyToken, isAdmin], deleteProductById);

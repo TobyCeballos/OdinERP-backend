@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
   {
-    product_id: { type: Number, required: true },
+    product_id: { type: Number, unique: true },
     product_name: { type: String, required: true },
     product_provider: { type: String, required: true },
     provider_product_id: String,
@@ -16,12 +16,11 @@ const productSchema = new mongoose.Schema(
     stock:  { type: Number, required: true },
     min_stock: Number,
     max_stock:Number,
-    upload_date: { type: String, required: true },
-    modification_date: { type: String, required: true },
     product_state: { type: String, required: true },
   },
   {
     versionKey: false,
+    timestamps:true
   }
 );
 

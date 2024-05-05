@@ -86,9 +86,10 @@ export const searchProducts = async (req, res) => {
     if (query) {
       const results = await Product.find({
         $or: [
-          { product_name: { $regex: new RegExp(query, "i") } }, // Buscar por fragmentos de texto en el nombre del producto
-          { brand: { $regex: new RegExp(query, "i") } }, // Buscar por fragmentos de texto en la descripción del producto (si es aplicable)
-          // Agrega más campos aquí si deseas buscar en otros campos de tu modelo de Producto
+          { product_name: { $regex: new RegExp(query, "i") } },
+          { brand: { $regex: new RegExp(query, "i") } },
+          { provider_product_id: { $regex: new RegExp(query, "i") } },
+          
         ],
       }).select({ __v: 0 }).limit(15);
       console.log(results);
@@ -121,26 +122,56 @@ export const getProducts = async (req, res) => {
       .json({ message: "Error al obtener productos", error: error });
   }
 };
+export const updateProductByIdOnBuy = async (req, res) => {
+  const { productId } = req.params;
+  const { stock,purchase_price } = req.body;
 
-export const updateProductById = async (req, res) => {
-  
-  req.body.modification_date = new Date().toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-    
-  const updatedProduct = await Product.findByIdAndUpdate(
-    req.params.productId,
-    req.body,
-    {
-      new: true,
+  try {
+    // Buscar el producto por su ID
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Producto no encontrado" });
     }
-  );
-  res.status(204).json(updatedProduct);
+    console.log({stock, purchase_price})
+    // Sumar la cantidad enviada desde el frontend al stock actual del producto
+    product.stock += stock;
+    product.purchase_price = purchase_price;
+
+    // Guardar los cambios en la base de datos
+    const updatedProduct = await product.save();
+
+    // Devolver el producto actualizado como respuesta
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error("Error al actualizar el producto:", error);
+    res.status(500).json({ message: "Error del servidor al actualizar el producto" });
+  }
+};
+export const updateProductByIdOnSell = async (req, res) => {
+  const { productId } = req.params;
+  const { stock } = req.body;
+
+  try {
+    // Buscar el producto por su ID
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Producto no encontrado" });
+    }
+    console.log({stock})
+    // Sumar la cantidad enviada desde el frontend al stock actual del producto
+    product.stock -= stock;
+
+    // Guardar los cambios en la base de datos
+    const updatedProduct = await product.save();
+
+    // Devolver el producto actualizado como respuesta
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error("Error al actualizar el producto:", error);
+    res.status(500).json({ message: "Error del servidor al actualizar el producto" });
+  }
 };
 
 export const deleteProductById = async (req, res) => {
@@ -149,4 +180,32 @@ export const deleteProductById = async (req, res) => {
   await Product.findByIdAndDelete(productId);
 
   res.status(204).json();
+};
+
+export const updateProductById = async (req, res) => {
+  const { productId } = req.params;
+  const updateFields = req.body;
+
+  try {
+    // Buscar el producto por su ID
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Producto no encontrado" });
+    }
+
+    // Actualizar los campos del producto
+    Object.keys(updateFields).forEach((key) => {
+      product[key] = updateFields[key];
+    });
+
+    // Guardar los cambios en la base de datos
+    const updatedProduct = await product.save();
+
+    // Devolver el producto actualizado como respuesta
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error("Error al actualizar el producto:", error);
+    res.status(500).json({ message: "Error del servidor al actualizar el producto" });
+  }
 };

@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema(
     description: String,
     category: String,
     brand: String,
-    purchase_price: { type: String, required: true },
+    purchase_price: { type: Number, required: true },
     current_price: { type: String, required: true },
     sale_price: { type: String, required: true },
     unit_measurement: String,

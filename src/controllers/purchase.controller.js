@@ -1,4 +1,6 @@
+
 import Purchase from "../models/Purchases.js";
+import Product from "../models/Product.js";
 
 export const createPurchase = async (req, res) => {
   const highestPurchaseId = await Purchase.findOne({}, { purchase_id: 1 })
@@ -12,7 +14,7 @@ export const createPurchase = async (req, res) => {
     cashRegister,
     provider,
     description,
-    shippingAddress,
+    zipCode,
     warranty,
     receiptType,
     payCondition,
@@ -32,25 +34,39 @@ export const createPurchase = async (req, res) => {
   });
 
   try {
+    // Crear la compra
     const newPurchase = new Purchase({
       purchase_id: newPurchaseId,
       cashRegister,
       provider,
       description,
-      shippingAddress,
+      zipCode,
       warranty,
       receiptType,
       payCondition,
       vatCondition,
       discount,
       deposit,
-      cart,
       upload_date: new Date(),
       modification_date: modificationDate,
     });
 
+    // Guardar la compra en la base de datos
     const purchaseSaved = await newPurchase.save();
 
+    // Aumentar el stock de los productos del carrito
+    for (const item of cart) {
+      const product = await Product.findById(item.product_id);
+      if (!product) {
+        console.log(`Producto con ID ${item.product_id} no encontrado.`);
+        continue;
+      }
+      // Aumentar el stock del producto
+      product.stock += item.quantity;
+      await product.save();
+    }
+
+    // Devolver la respuesta
     res.status(201).json(purchaseSaved);
   } catch (error) {
     console.error(error);

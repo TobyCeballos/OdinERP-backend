@@ -17,7 +17,7 @@ const customerSchema = new mongoose.Schema({
   current_account_cart: []},
   {
     timestamps: true
-  } // Asumiendo que 'Product' es el nombre del modelo de los productos
+  } 
 );
 
 

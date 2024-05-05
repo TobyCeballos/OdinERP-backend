@@ -2,10 +2,12 @@ import { Router } from "express";
 import {
   getProducts,
   createProduct,
-  updateProductById,
+  updateProductByIdOnBuy,
+  updateProductByIdOnSell,
   deleteProductById,
   getProductById,
-  searchProducts
+  searchProducts,
+  updateProductById
 } from "../controllers/products.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
@@ -19,8 +21,10 @@ router.get("/search/:data",verifyToken, searchProducts);
 
 router.post("/", verifyToken, createProduct);
 
-
 router.put("/:productId", verifyToken, updateProductById);
+
+router.put("/:productId/on-buy", verifyToken, updateProductByIdOnBuy);
+router.put("/:productId/on-sell", verifyToken, updateProductByIdOnSell);
 
 router.delete("/:productId", [verifyToken, isAdmin], deleteProductById);
 

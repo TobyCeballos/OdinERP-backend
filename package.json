@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.js --host",
+    "dev": "nodemon index.js --host --ignore frontend",
     "start": "node index.js"
   },
   "keywords": [],
@@ -28,6 +28,7 @@
     "nodemon": "^3.1.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
+    "socket.io": "^4.7.5",
     "supertest": "^6.3.4"
   }
 }

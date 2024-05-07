@@ -91,7 +91,10 @@ export const searchCustomers = async (req, res) => {
 
 export const getCustomers = async (req, res) => {
   try {
-    const customers = await Customer.find().sort({ admission_date: -1 });
+    const page = req.query.page || 1;
+    const pageSize = 15;
+    const skip = (page - 1) * pageSize;
+    const customers = await Customer.find().sort({ admission_date: -1 }).skip(skip).limit(pageSize);
     res.json(customers);
   } catch (error) {
     console.error(error);

@@ -6,6 +6,7 @@ const providerSchema = new mongoose.Schema({
   email: { type: String },
   phone: { type: String },
   zip_code: { type: String },
+  address: { type: String },
   cuit_cuil: { type: String },
   vat_condition: { type: String },
   credit_limit: { type: Number },

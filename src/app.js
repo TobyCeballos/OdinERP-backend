@@ -39,4 +39,5 @@ app.use("/api/purchase", purchaseRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/auth", authRoutes);
 
+
 export default app;

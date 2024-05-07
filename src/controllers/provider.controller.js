@@ -76,7 +76,7 @@ export const searchProviders = async (req, res) => {
     if (query) {
       const results = await Provider.find({
         provider_name: { $regex: new RegExp(query, "i") },
-      }).select({ __v: 0 });
+      }).select({ __v: 0 }).limit(20);
       res.json(results);
     } else {
       const providers = await Provider.find().select("-_id");
@@ -90,7 +90,10 @@ export const searchProviders = async (req, res) => {
 
 export const getProviders = async (req, res) => {
   try {
-    const providers = await Provider.find().sort({ admission_date: -1 });
+    const page = req.query.page || 1;
+    const pageSize = 15;
+    const skip = (page - 1) * pageSize;
+    const providers = await Provider.find().sort({ admission_date: -1 }).skip(skip).limit(pageSize);
     res.json(providers);
   } catch (error) {
     console.error(error);

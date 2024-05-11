@@ -1,6 +1,11 @@
-import Sells from "../models/Sells.js";
+import sellSchema from "../models/Sells.js";
+import mongoose from "mongoose";
 
 export const createSell = async (req, res) => {
+  const collectionName = req.params.company + "-sells";
+
+  const Sells = mongoose.model("Sells", sellSchema, collectionName);
+
   const highestSaleId = await Sells.findOne({}, { sale_id: 1 })
   .sort({ sale_id: -1 })
   .limit(1);
@@ -34,7 +39,7 @@ const newSaleId = highestSaleId ? highestSaleId.sale_id + 1 : 1;
     const newSell = new Sells({
       sale_id: newSaleId,
       cashRegister,
-      customer,
+      customer: customer || "Cliente",
       description,
       shippingAddress,
       warranty,
@@ -58,6 +63,10 @@ const newSaleId = highestSaleId ? highestSaleId.sale_id + 1 : 1;
 };
 
 export const getSellById = async (req, res) => {
+  const collectionName = req.params.company + "-sells";
+
+  const Sells = mongoose.model("Sells", sellSchema, collectionName);
+
   const sellId = req.params.sellId;
 
   const sell = await Sells.findById(sellId);
@@ -92,6 +101,10 @@ export const searchSells = async (req, res) => {
   }
 };
 export const getSells = async (req, res) => {
+  const collectionName = req.params.company + "-sells";
+
+  const Sells = mongoose.model("Sells", sellSchema, collectionName);
+
   try {
     const page = req.query.page || 1;
     const pageSize = 15;
@@ -103,6 +116,10 @@ export const getSells = async (req, res) => {
   }
 };
 export const updateSellById = async (req, res) => {
+  const collectionName = req.params.company + "-sells";
+
+  const Sells = mongoose.model("Sells", sellSchema, collectionName);
+
   req.body.modification_date = new Date().toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
@@ -124,6 +141,10 @@ export const updateSellById = async (req, res) => {
 };
 
 export const payOffSell = async (req, res) => {
+  const collectionName = req.params.company + "-sells";
+
+  const Sells = mongoose.model("Sells", sellSchema, collectionName);
+
   try {
     // Obtener el ID de la venta de la solicitud
     const sellId = req.params.sellId;
@@ -156,6 +177,10 @@ export const payOffSell = async (req, res) => {
 };
 
 export const deleteSellById = async (req, res) => {
+  const collectionName = req.params.company + "-sells";
+
+  const Sells = mongoose.model("Sells", sellSchema, collectionName);
+
   const { sellId } = req.params;
 
   await Sells.findByIdAndDelete(sellId);

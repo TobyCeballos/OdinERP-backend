@@ -13,19 +13,19 @@ import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();
 
-router.get("/",verifyToken, getProducts);
+router.get("/:company/",verifyToken, getProducts);
 
-router.get("/:productId",verifyToken, getProductById);
+router.get("/:company/:productId",verifyToken, getProductById);
 
-router.get("/search/:data",verifyToken, searchProducts);
+router.get("/:company/search/:data",verifyToken, searchProducts);
 
-router.post("/", verifyToken, createProduct);
+router.post("/:company/", verifyToken, createProduct);
 
-router.put("/:productId", verifyToken, updateProductById);
+router.put("/:company/:productId", verifyToken, updateProductById);
 
-router.put("/:productId/on-buy", verifyToken, updateProductByIdOnBuy);
-router.put("/:productId/on-sell", verifyToken, updateProductByIdOnSell);
+router.put("/:company/:productId/on-buy", verifyToken, updateProductByIdOnBuy);
+router.put("/:company/:productId/on-sell", verifyToken, updateProductByIdOnSell);
 
-router.delete("/:productId", [verifyToken, isAdmin], deleteProductById);
+router.delete("/:company/:productId", [verifyToken, isAdmin], deleteProductById);
 
 export default router;

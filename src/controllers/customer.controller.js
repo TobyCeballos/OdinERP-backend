@@ -1,6 +1,12 @@
-import Customer from "../models/Customer.js";
+import mongoose from "mongoose";
+import customerSchema from "../models/Customer.js";// Definir el nombre de la colección
+
 
 export const createCustomer = async (req, res) => {
+  const collectionName = req.params.company + "-customers";
+
+  const Customer = mongoose.model("Customer", customerSchema, collectionName);
+
   const highestCustomerId = await Customer.findOne({}, { customer_id: 1 })
     .sort({ customer_id: -1 })
     .limit(1);
@@ -60,7 +66,9 @@ export const createCustomer = async (req, res) => {
 
 
 export const getCustomerById = async (req, res) => {
-  const customerId = req.params.customerId;
+  const collectionName = req.params.company + "-customers";
+
+  const Customer = mongoose.model("Customer", customerSchema, collectionName);
 
   try {
     const customer = await Customer.findById(customerId);
@@ -72,6 +80,10 @@ export const getCustomerById = async (req, res) => {
 };
 
 export const searchCustomers = async (req, res) => {
+  const collectionName = req.params.company + "-customers";
+
+  const Customer = mongoose.model("Customer", customerSchema, collectionName);
+
   try {
     const query = req.params.data;
     if (query) {
@@ -90,6 +102,10 @@ export const searchCustomers = async (req, res) => {
 };
 
 export const getCustomers = async (req, res) => {
+  const collectionName = req.params.company + "-customers";
+
+  const Customer = mongoose.model("Customer", customerSchema, collectionName);
+
   try {
     const page = req.query.page || 1;
     const pageSize = 15;
@@ -103,6 +119,11 @@ export const getCustomers = async (req, res) => {
 };
 
 export const updateCustomerById = async (req, res) => {
+  
+  const collectionName = req.params.company + "-customers";
+
+  const Customer = mongoose.model("Customer", customerSchema, collectionName);
+
   req.body.modification_date = new Date().toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
@@ -128,6 +149,11 @@ export const updateCustomerById = async (req, res) => {
 };
 
 export const deleteCustomerById = async (req, res) => {
+  
+  const collectionName = req.params.company + "-customers";
+
+  const Customer = mongoose.model("Customer", customerSchema, collectionName);
+
   const { customerId } = req.params;
 
   try {
@@ -138,6 +164,10 @@ export const deleteCustomerById = async (req, res) => {
     res.status(500).json({ message: "Error al eliminar el cliente" });
   }
 };export const addToCurrentAccountCart = async (req, res) => {
+  const collectionName = req.params.company + "-customers";
+
+  const Customer = mongoose.model("Customer", customerSchema, collectionName);
+
   const customerId = req.params.customerId;
   const { cart } = req.body;
 

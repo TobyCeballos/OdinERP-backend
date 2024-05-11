@@ -12,20 +12,20 @@ import { verifyToken, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();
 
-router.get("/", verifyToken, getCustomers);
+router.get("/:company/", verifyToken, getCustomers);
 
-router.get("/:customerId", verifyToken, getCustomerById);
+router.get("/:company/:customerId", verifyToken, getCustomerById);
 
-router.get("/search/:data", verifyToken, searchCustomers);
+router.get("/:company/search/:data", verifyToken, searchCustomers);
 
-router.post("/automaticCustomer/:customerName", verifyToken, createCustomer);
+router.post("/:company/automaticCustomer/:customerName", verifyToken, createCustomer);
 
-router.post("/", verifyToken, createCustomer);
+router.post("/:company/", verifyToken, createCustomer);
 
-router.put("/:customerId", verifyToken, updateCustomerById);
+router.put("/:company/:customerId", verifyToken, updateCustomerById);
 
-router.delete("/:customerId", [verifyToken, isAdmin], deleteCustomerById);
+router.delete("/:company/:customerId", [verifyToken, isAdmin], deleteCustomerById);
 
-router.post("/:customerId/addToCurrentAccountCart", verifyToken, addToCurrentAccountCart);
+router.post("/:company/:customerId/addToCurrentAccountCart", verifyToken, addToCurrentAccountCart);
 
 export default router;

@@ -9,6 +9,7 @@ import productRoutes from "./routes/products.routes.js";
 import customerRoutes from "./routes/customer.routes.js";
 import providersRoutes from "./routes/provider.routes.js";
 import sellRoutes from "./routes/sell.routes.js";
+import notesRoutes from "./routes/notes.routes.js";
 import purchaseRoutes from "./routes/purchase.routes.js";
 import usersRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
@@ -36,6 +37,7 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/providers", providersRoutes);
 app.use("/api/sells", sellRoutes);
 app.use("/api/purchase", purchaseRoutes);
+app.use("/api/news", notesRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/auth", authRoutes);
 

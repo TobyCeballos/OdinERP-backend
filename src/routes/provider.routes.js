@@ -11,18 +11,18 @@ import { verifyToken, isAdmin } from "../middlewares/authJwt.js";
 
 const router = Router();
 
-router.get("/", verifyToken, getProviders);
+router.get("/:company/", verifyToken, getProviders);
 
-router.get("/:providerId", verifyToken, getProviderById);
+router.get("/:company/:providerId", verifyToken, getProviderById);
 
-router.get("/search/:data", verifyToken, searchProviders);
+router.get("/:company/search/:data", verifyToken, searchProviders);
 
-router.post("/automaticProvider/:providerName", verifyToken, createProvider);
+router.post("/:company/automaticProvider/:providerName", verifyToken, createProvider);
 
-router.post("/", verifyToken, createProvider);
+router.post("/:company/", verifyToken, createProvider);
 
-router.put("/:providerId", verifyToken, updateProviderById);
+router.put("/:company/:providerId", verifyToken, updateProviderById);
 
-router.delete("/:providerId", [verifyToken, isAdmin], deleteProviderById);
+router.delete("/:company/:providerId", [verifyToken, isAdmin], deleteProviderById);
 
 export default router;

@@ -1,5 +1,10 @@
-import Product from "../models/Product.js";
+import mongoose from "mongoose";
+import productSchema from "../models/Product.js";
 export const createProduct = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Product = mongoose.model("Product", productSchema, collectionName);
+
   const highestProductId = await Product.findOne({}, { product_id: 1 })
     .sort({ product_id: -1 })
     .limit(1);
@@ -74,6 +79,10 @@ export const createProduct = async (req, res) => {
 
 
 export const getProductById = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Product = mongoose.model("Product", productSchema, collectionName);
+
   const productId = req.params.productId;
 
   const product = await Product.findById(productId);
@@ -81,6 +90,10 @@ export const getProductById = async (req, res) => {
   res.status(200).json(product);
 };
 export const searchProducts = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Product = mongoose.model("Product", productSchema, collectionName);
+
   try {
     const query = await req.params.data;
     if (query) {
@@ -110,6 +123,10 @@ export const searchProducts = async (req, res) => {
   }
 };
 export const getProducts = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Product = mongoose.model("Product", productSchema, collectionName);
+
   try {
     const page = req.query.page || 1;
     const pageSize = 15;
@@ -123,6 +140,10 @@ export const getProducts = async (req, res) => {
   }
 };
 export const updateProductByIdOnBuy = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Product = mongoose.model("Product", productSchema, collectionName);
+
   const { productId } = req.params;
   const { stock,purchase_price } = req.body;
 
@@ -149,6 +170,10 @@ export const updateProductByIdOnBuy = async (req, res) => {
   }
 };
 export const updateProductByIdOnSell = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Product = mongoose.model("Product", productSchema, collectionName);
+
   const { productId } = req.params;
   const { stock } = req.body;
 
@@ -175,6 +200,10 @@ export const updateProductByIdOnSell = async (req, res) => {
 };
 
 export const deleteProductById = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Product = mongoose.model("Product", productSchema, collectionName);
+
   const { productId } = req.params;
 
   await Product.findByIdAndDelete(productId);
@@ -183,6 +212,10 @@ export const deleteProductById = async (req, res) => {
 };
 
 export const updateProductById = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Product = mongoose.model("Product", productSchema, collectionName);
+
   const { productId } = req.params;
   const updateFields = req.body;
 

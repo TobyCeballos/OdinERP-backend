@@ -61,4 +61,4 @@ const sellSchema = new mongoose.Schema({
 );
 
 
-export default mongoose.model("Sell", sellSchema);
+export default sellSchema

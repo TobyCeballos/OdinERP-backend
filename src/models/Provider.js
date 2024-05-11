@@ -18,4 +18,4 @@ const providerSchema = new mongoose.Schema({
   timestamps: true
 });
 
-export default mongoose.model("Provider", providerSchema);
+export default providerSchema;

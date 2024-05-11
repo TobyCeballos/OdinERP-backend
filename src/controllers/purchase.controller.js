@@ -1,8 +1,12 @@
 
-import Purchase from "../models/Purchases.js";
+import purchaseSchema from "../models/Purchases.js";
 import Product from "../models/Product.js";
 
 export const createPurchase = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Purchase = mongoose.model("Purchase", purchaseSchema, collectionName);
+
   const highestPurchaseId = await Purchase.findOne({}, { purchase_id: 1 })
     .sort({ purchase_id: -1 })
     .limit(1);
@@ -75,6 +79,10 @@ export const createPurchase = async (req, res) => {
 };
 
 export const getPurchaseById = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Purchase = mongoose.model("Purchase", purchaseSchema, collectionName);
+
   const purchaseId = req.params.purchaseId;
 
   const purchase = await Purchase.findById(purchaseId);
@@ -83,6 +91,10 @@ export const getPurchaseById = async (req, res) => {
 };
 
 export const searchPurchases = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Purchase = mongoose.model("Purchase", purchaseSchema, collectionName);
+
   const page = req.query.page || 1;
   const pageSize = 15;
   const skip = (page - 1) * pageSize;
@@ -110,6 +122,10 @@ export const searchPurchases = async (req, res) => {
 };
 
 export const getPurchases = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Purchase = mongoose.model("Purchase", purchaseSchema, collectionName);
+
   try {
     const page = req.query.page || 1;
     const pageSize = 15;
@@ -122,6 +138,10 @@ export const getPurchases = async (req, res) => {
 };
 
 export const updatePurchaseById = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Purchase = mongoose.model("Purchase", purchaseSchema, collectionName);
+
   req.body.modification_date = new Date().toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
@@ -143,6 +163,10 @@ export const updatePurchaseById = async (req, res) => {
 };
 
 export const payOffPurchase = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Purchase = mongoose.model("Purchase", purchaseSchema, collectionName);
+
   try {
     // Obtener el ID de la compra de la solicitud
     const purchaseId = req.params.purchaseId;
@@ -175,6 +199,10 @@ export const payOffPurchase = async (req, res) => {
 };
 
 export const deletePurchaseById = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+
+  const Purchase = mongoose.model("Purchase", purchaseSchema, collectionName);
+
   const { purchaseId } = req.params;
 
   await Purchase.findByIdAndDelete(purchaseId);

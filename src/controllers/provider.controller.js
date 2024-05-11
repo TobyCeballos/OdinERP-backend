@@ -1,6 +1,11 @@
-import Provider from "../models/Provider.js";
+import mongoose from "mongoose";
+import providerSchema from "../models/Provider.js";
 
 export const createProvider = async (req, res) => {
+  const collectionName = req.params.company + "-providers";
+
+  const Provider = mongoose.model("Provider", providerSchema, collectionName);
+
     const highestProviderId = await Provider.findOne({}, { provider_id: 1 })
       .sort({ provider_id: -1 })
       .limit(1);
@@ -57,6 +62,10 @@ export const createProvider = async (req, res) => {
     }
   };
 export const getProviderById = async (req, res) => {
+  const collectionName = req.params.company + "-providers";
+
+  const Provider = mongoose.model("Provider", providerSchema, collectionName);
+
   const providerId = req.params.providerId;
   try {
     const provider = await Provider.findById(providerId);
@@ -71,6 +80,10 @@ export const getProviderById = async (req, res) => {
 };
 
 export const searchProviders = async (req, res) => {
+  const collectionName = req.params.company + "-providers";
+
+  const Provider = mongoose.model("Provider", providerSchema, collectionName);
+
   try {
     const query = req.params.data;
     if (query) {
@@ -89,6 +102,10 @@ export const searchProviders = async (req, res) => {
 };
 
 export const getProviders = async (req, res) => {
+  const collectionName = req.params.company + "-providers";
+
+  const Provider = mongoose.model("Provider", providerSchema, collectionName);
+
   try {
     const page = req.query.page || 1;
     const pageSize = 15;
@@ -102,6 +119,10 @@ export const getProviders = async (req, res) => {
 };
 
 export const updateProviderById = async (req, res) => {
+  const collectionName = req.params.company + "-providers";
+
+  const Provider = mongoose.model("Provider", providerSchema, collectionName);
+
   try {
     const updatedProvider = await Provider.findByIdAndUpdate(
       req.params.providerId,
@@ -118,6 +139,10 @@ export const updateProviderById = async (req, res) => {
 };
 
 export const deleteProviderById = async (req, res) => {
+  const collectionName = req.params.company + "-providers";
+
+  const Provider = mongoose.model("Provider", providerSchema, collectionName);
+
   const { providerId } = req.params;
   try {
     await Provider.findByIdAndDelete(providerId);
@@ -129,6 +154,10 @@ export const deleteProviderById = async (req, res) => {
 };
 
 export const addToCurrentAccountCart = async (req, res) => {
+  const collectionName = req.params.company + "-providers";
+
+  const Provider = mongoose.model("Provider", providerSchema, collectionName);
+
   const providerId = req.params.providerId;
   const { cart } = req.body;
   try {

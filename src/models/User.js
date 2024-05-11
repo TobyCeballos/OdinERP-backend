@@ -36,6 +36,9 @@ const productSchema = new mongoose.Schema(
     company_position: {
       type: String
     },
+    company: {
+      type: String
+    },
     department: {
       type: String
     },

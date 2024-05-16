@@ -57,7 +57,7 @@ export const signinHandler = async (req, res) => {
       });
       
     const token = jwt.sign({ id: userFound._id }, SECRET, {
-      expiresIn: 86400, // 24 hours
+      expiresIn: 604800, // 24 hours
     });
     console.log(userFound)
     console.log(userFound.company)

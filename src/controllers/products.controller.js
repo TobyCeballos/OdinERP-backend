@@ -27,13 +27,13 @@ export const createProduct = async (req, res) => {
     max_stock,
     product_state,
   } = req.body;
-  const modificationDate = new Date().toLocaleDateString('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+  const modificationDate = new Date().toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
   try {
     const existingProduct = await Product.findOne({
@@ -42,11 +42,12 @@ export const createProduct = async (req, res) => {
 
     if (existingProduct) {
       // Si el producto ya existe, actualiza solo el campo current_price
+      existingProduct.sale_price = sale_price || 30;
       existingProduct.current_price = current_price;
       existingProduct.modification_date = modificationDate;
       const productSaved = await existingProduct.save();
-      const message =`Producto actualizado - Nombre: ${product_name}, Marca: ${brand}, Nuevo precio: ${current_price}`;
-      res.status(200).json({prod:productSaved, message:message});
+      const message = `Producto actualizado - Nombre: ${product_name}, Marca: ${brand}, Nuevo precio: ${current_price}`;
+      res.status(200).json({ prod: productSaved, message: message });
     } else {
       // Si el producto no existe, créalo
       const newProduct = new Product({
@@ -73,10 +74,14 @@ export const createProduct = async (req, res) => {
     }
   } catch (error) {
     console.error("Error al crear o actualizar el producto:", error);
-    return res.status(500).json({ message: "Error al crear o actualizar el producto", error: error });
+    return res
+      .status(500)
+      .json({
+        message: "Error al crear o actualizar el producto",
+        error: error,
+      });
   }
 };
-
 
 export const getProductById = async (req, res) => {
   const collectionName = req.params.company + "-products";
@@ -102,9 +107,10 @@ export const searchProducts = async (req, res) => {
           { product_name: { $regex: new RegExp(query, "i") } },
           { brand: { $regex: new RegExp(query, "i") } },
           { provider_product_id: { $regex: new RegExp(query, "i") } },
-          
         ],
-      }).select({ __v: 0 }).limit(15);
+      })
+        .select({ __v: 0 })
+        .limit(15);
       console.log(results);
       res.json(results);
     } else {
@@ -126,12 +132,12 @@ export const getProducts = async (req, res) => {
   const collectionName = req.params.company + "-products";
 
   const Product = mongoose.model("Product", productSchema, collectionName);
-
+  //await deleteProducts(collectionName)
   try {
     const page = req.query.page || 1;
-    const pageSize = 15;
+    const pageSize = 20;
     const skip = (page - 1) * pageSize;
-    const products = await Product.find().skip(skip).limit(pageSize)
+    const products = await Product.find().skip(skip).limit(pageSize);
     return res.json(products);
   } catch (error) {
     return res
@@ -145,7 +151,7 @@ export const updateProductByIdOnBuy = async (req, res) => {
   const Product = mongoose.model("Product", productSchema, collectionName);
 
   const { productId } = req.params;
-  const { stock,purchase_price } = req.body;
+  const { stock, purchase_price } = req.body;
 
   try {
     // Buscar el producto por su ID
@@ -154,7 +160,7 @@ export const updateProductByIdOnBuy = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Producto no encontrado" });
     }
-    console.log({stock, purchase_price})
+    console.log({ stock, purchase_price });
     // Sumar la cantidad enviada desde el frontend al stock actual del producto
     product.stock += stock;
     product.purchase_price = purchase_price;
@@ -166,7 +172,9 @@ export const updateProductByIdOnBuy = async (req, res) => {
     res.status(200).json(updatedProduct);
   } catch (error) {
     console.error("Error al actualizar el producto:", error);
-    res.status(500).json({ message: "Error del servidor al actualizar el producto" });
+    res
+      .status(500)
+      .json({ message: "Error del servidor al actualizar el producto" });
   }
 };
 export const updateProductByIdOnSell = async (req, res) => {
@@ -184,7 +192,7 @@ export const updateProductByIdOnSell = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Producto no encontrado" });
     }
-    console.log({stock})
+    console.log({ stock });
     // Sumar la cantidad enviada desde el frontend al stock actual del producto
     product.stock -= stock;
 
@@ -195,7 +203,9 @@ export const updateProductByIdOnSell = async (req, res) => {
     res.status(200).json(updatedProduct);
   } catch (error) {
     console.error("Error al actualizar el producto:", error);
-    res.status(500).json({ message: "Error del servidor al actualizar el producto" });
+    res
+      .status(500)
+      .json({ message: "Error del servidor al actualizar el producto" });
   }
 };
 
@@ -239,6 +249,28 @@ export const updateProductById = async (req, res) => {
     res.status(200).json(updatedProduct);
   } catch (error) {
     console.error("Error al actualizar el producto:", error);
-    res.status(500).json({ message: "Error del servidor al actualizar el producto" });
+    res
+      .status(500)
+      .json({ message: "Error del servidor al actualizar el producto" });
   }
+};
+
+const deleteProducts = async({ collectionName }) => {
+  const Product = mongoose.model("Product", productSchema, collectionName);
+
+
+await Product.deleteMany({
+  
+product_id: {
+    $gte: 13185,
+    $lte: 14441
+  }
+}).then(result => {
+  console.log(result.deletedCount + " documentos eliminados");
+}).catch(err => {
+  console.error(err);
+});
+
+
+  console.log("Product deleteds");
 };

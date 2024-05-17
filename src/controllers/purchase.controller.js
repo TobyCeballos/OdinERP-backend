@@ -1,7 +1,7 @@
 
 import purchaseSchema from "../models/Purchases.js";
 import Product from "../models/Product.js";
-
+import mongoose from "mongoose";
 export const createPurchase = async (req, res) => {
   const collectionName = req.params.company + "-products";
 

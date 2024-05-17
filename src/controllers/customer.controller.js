@@ -66,6 +66,7 @@ export const createCustomer = async (req, res) => {
 
 
 export const getCustomerById = async (req, res) => {
+  const customerId = req.params.customerId
   const collectionName = req.params.company + "-customers";
 
   const Customer = mongoose.model("Customer", customerSchema, collectionName);

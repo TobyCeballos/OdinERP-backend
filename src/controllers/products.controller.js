@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 import productSchema from "../models/Product.js";
+import { io } from "../../index.js"; // Importa io desde app.js
+import XLSX from 'xlsx';
+
 export const createProduct = async (req, res) => {
   const collectionName = req.params.company + "-products";
 
@@ -70,7 +73,6 @@ export const createProduct = async (req, res) => {
       });
       const productSaved = await newProduct.save();
       res.status(201).json(productSaved);
-      console.log(`Producto creado - Nombre: ${product_name}, Marca: ${brand}`);
     }
   } catch (error) {
     console.error("Error al crear o actualizar el producto:", error);
@@ -91,7 +93,6 @@ export const getProductById = async (req, res) => {
   const productId = req.params.productId;
 
   const product = await Product.findById(productId);
-  console.log(product);
   res.status(200).json(product);
 };
 export const searchProducts = async (req, res) => {
@@ -111,7 +112,6 @@ export const searchProducts = async (req, res) => {
       })
         .select({ __v: 0 })
         .limit(15);
-      console.log(results);
       res.json(results);
     } else {
       try {
@@ -160,7 +160,6 @@ export const updateProductByIdOnBuy = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Producto no encontrado" });
     }
-    console.log({ stock, purchase_price });
     // Sumar la cantidad enviada desde el frontend al stock actual del producto
     product.stock += stock;
     product.purchase_price = purchase_price;
@@ -192,7 +191,6 @@ export const updateProductByIdOnSell = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Producto no encontrado" });
     }
-    console.log({ stock });
     // Sumar la cantidad enviada desde el frontend al stock actual del producto
     product.stock -= stock;
 
@@ -272,5 +270,80 @@ product_id: {
 });
 
 
-  console.log("Product deleteds");
+  console.log("Product deleted");
+};
+export const bulkUpdateProducts = async (req, res) => {
+  const collectionName = req.params.company + "-products";
+  const Product = mongoose.model('Product', productSchema, collectionName);
+
+  if (!req.files || !req.files.file) {
+    return res.status(400).json({ message: 'No se ha subido ningún archivo' });
+  }
+
+  const file = req.files.file;
+  const salePrice = req.body.sale_price;
+  const productProvider = req.body.product_provider;
+
+  try {
+    const workbook = XLSX.read(file.data, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    const existingProducts = await Product.find({ product_name: { $in: jsonData.map(product => product.product_name.toLowerCase()) } });
+
+    const existingProductsDict = existingProducts.reduce((dict, product) => {
+      dict[product.product_name.toLowerCase()] = product;
+      return dict;
+    }, {});
+
+    const highestProduct = await Product.findOne({}, { product_id: 1 }).sort({ product_id: -1 }).limit(1);
+    let newProductId = highestProduct ? highestProduct.product_id + 1 : 1;
+
+    const bulkOperations = jsonData.map((product, index) => {
+      const existingProduct = existingProductsDict[product.product_name.toLowerCase()];
+      const productIdToUse = existingProduct ? existingProduct.product_id : newProductId++;
+
+      // Emitir progreso cada 10 productos
+      if (index % 10 === 0) {
+        const progress = Math.round((index / jsonData.length) * 100);
+        io.emit('progress', { progress });
+      }
+
+      return {
+        updateOne: {
+          filter: { product_name: product.product_name.toLowerCase() },
+          update: {
+            $set: {
+              product_id: productIdToUse,
+              provider_product_id: product.provider_product_id,
+              current_price: product.current_price,
+              sale_price: salePrice || 0,
+              product_provider: productProvider || "prov",
+              purchase_price: product.purchase_price || 0,
+              category: product.category || "cat",
+              brand: product.brand || "brand",
+              description: product.description || "desc",
+              unit_measurement: product.unit_measurement || "unidad",
+              stock: product.stock || 0,
+              min_stock: product.min_stock || 0,
+              max_stock: product.max_stock || 0,
+              product_state: product.product_state || "active",
+            },
+          },
+          upsert: true,
+        },
+      };
+    });
+
+    const result = await Product.bulkWrite(bulkOperations);
+    res.status(200).json({
+      message: `Operación completada. Productos actualizados: ${result.modifiedCount}. Productos insertados: ${result.upsertedCount}.`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error al realizar la actualización masiva',
+      error: error.message,
+    });
+  }
 };

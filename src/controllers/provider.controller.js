@@ -14,7 +14,6 @@ export const createProvider = async (req, res) => {
     const newProviderId = highestProviderId
       ? highestProviderId.provider_id + 1
       : 1;
-    console.log(req.params.providerName)
     const {
         email,
         phone,

@@ -15,7 +15,6 @@ export const createCustomer = async (req, res) => {
   const newCustomerId = highestCustomerId
     ? highestCustomerId.customer_id + 1
     : 1;
-  console.log(req.params.customerName)
   const {
       email,
       phone,

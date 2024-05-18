@@ -51,7 +51,6 @@ export const isAdmin = async (req, res, next) => {
 
     return res.status(403).json({ message: "Require Admin Role!" });
   } catch (error) {
-    console.log(error);
     return res.status(500).send({ message: error });
   }
 };

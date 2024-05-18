@@ -7,12 +7,16 @@ import {
   deleteProductById,
   getProductById,
   searchProducts,
-  updateProductById
+  updateProductById,
+  bulkUpdateProducts
 } from "../controllers/products.controller.js";
 import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 
+import fileUpload from 'express-fileupload';
 const router = Router();
 
+
+router.use(fileUpload());
 router.get("/:company/",verifyToken, getProducts);
 
 router.get("/:company/:productId",verifyToken, getProductById);
@@ -20,6 +24,7 @@ router.get("/:company/:productId",verifyToken, getProductById);
 router.get("/:company/search/:data",verifyToken, searchProducts);
 
 router.post("/:company/", verifyToken, createProduct);
+router.post("/bulk-update/:company", bulkUpdateProducts);
 
 router.put("/:company/:productId", verifyToken, updateProductById);
 

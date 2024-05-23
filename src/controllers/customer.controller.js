@@ -163,10 +163,13 @@ export const deleteCustomerById = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Error al eliminar el cliente" });
   }
-};export const addToCurrentAccountCart = async (req, res) => {
-  const collectionName = req.params.company + "-customers";
+};
 
-  const Customer = mongoose.model("Customer", customerSchema, collectionName);
+
+export const addToCurrentAccountCart = async (req, res) => {
+  const collectionName = req.params.company + '-customers';
+
+  const Customer = mongoose.model('Customer', customerSchema, collectionName);
 
   const customerId = req.params.customerId;
   const { cart } = req.body;
@@ -176,23 +179,47 @@ export const deleteCustomerById = async (req, res) => {
     const customer = await Customer.findById(customerId);
 
     if (!customer) {
-      return res.status(404).json({ message: "Cliente no encontrado" });
+      return res.status(404).json({ message: 'Cliente no encontrado' });
     }
 
-    // Agrega los productos del carrito al carrito de la cuenta actual del cliente
+    console.log('Current Account Cart Before:', customer.current_account_cart);
+
+    // Itera sobre los productos del carrito y agrégalos al carrito de la cuenta actual del cliente
     cart.forEach((item) => {
-      customer.current_account_cart.push({
-        objectId: item.objectId,
-        quantity: item.quantity
-      });
+      console.log('Processing item:', item);
+      const existingProductIndex = customer.current_account_cart.findIndex(
+        (cartItem) => cartItem.objectId.toString() === item.objectId.toString()
+      );
+
+      if (existingProductIndex !== -1) {
+        // Si el producto ya está en el carrito, suma la cantidad
+        console.log('Existing product found at index:', existingProductIndex);
+        customer.current_account_cart[existingProductIndex].quantity += item.quantity;
+      } else {
+        // Si el producto no está en el carrito, agrégalo
+        console.log('Adding new product to cart:', item);
+        customer.current_account_cart.push({
+          objectId: item.objectId,
+          quantity: item.quantity,
+        });
+      }
     });
+
+    // Marcar el array como modificado
+    customer.markModified('current_account_cart');
+
+    console.log('Current Account Cart After:', customer.current_account_cart);
 
     // Guarda el cliente actualizado en la base de datos
     await customer.save();
 
-    res.status(200).json({ message: "Productos añadidos al carrito con éxito" });
+    // Verifica si realmente se guardaron los cambios en la base de datos
+    const updatedCustomer = await Customer.findById(customerId);
+    console.log('Updated Customer from DB:', updatedCustomer.current_account_cart);
+
+    res.status(200).json({ message: 'Productos añadidos al carrito con éxito' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al añadir productos al carrito del cliente" });
+    console.error('Error al añadir productos al carrito del cliente:', error);
+    res.status(500).json({ message: 'Error al añadir productos al carrito del cliente' });
   }
 };

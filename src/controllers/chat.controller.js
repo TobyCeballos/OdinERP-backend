@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 import chatSchema from "../models/Chat.js";
-
 // Guardar un mensaje en la base de datos
 export const saveMessage = async (msg) => {
-    const collectionName = req.params.company + "-chats";
-  
-    const Chat = mongoose.model("Chat", chatSchema, collectionName);
+  const collectionName = msg.company + "-chats";
+
+  const Chat = mongoose.model("Chat", chatSchema, collectionName);
   try {
-    const chatMessage = new Chat({ message: msg });
-    await chatMessage.save();
+    // Crear una instancia del modelo Chat con el mensaje
+    const chatMessage = new Chat(msg);
+    await chatMessage.save(); // Guardar el mensaje en la base de datos
     console.log('Message saved:', msg);
   } catch (error) {
     console.error('Error saving message:', error);

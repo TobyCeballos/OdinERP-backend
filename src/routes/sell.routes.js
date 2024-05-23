@@ -16,7 +16,7 @@ router.get("/:company/", verifyToken, getSells);
 
 router.get("/:company/:sellId", verifyToken, getSellById);
 
-router.put("/:company/payOff/:sellId", verifyToken, payOffSell);
+router.put("/:company/payoff/:sellId", verifyToken, payOffSell);
 
 router.get("/:company/search/:data", verifyToken, searchSells);
 

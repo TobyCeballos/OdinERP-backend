@@ -1,4 +1,5 @@
 import sellSchema from "../models/Sells.js";
+import customerSchema from "../models/Customer.js";
 import mongoose from "mongoose";
 
 export const createSell = async (req, res) => {
@@ -139,33 +140,82 @@ export const updateSellById = async (req, res) => {
 
   res.status(204).json(updatedSell);
 };
-
 export const payOffSell = async (req, res) => {
-  const collectionName = req.params.company + "-sells";
+  const collectionName = req.params.company + '-sells';
+  const customerCollectionName = req.params.company + '-customers';
 
-  const Sells = mongoose.model("Sells", sellSchema, collectionName);
+  const Sells = mongoose.model('Sells', sellSchema, collectionName);
+  const Customers = mongoose.model('Customers', customerSchema, customerCollectionName);
 
   try {
     // Obtener el ID de la venta de la solicitud
     const sellId = req.params.sellId;
+    console.log(`Searching for sell with ID: ${sellId} in collection: ${collectionName}`);
 
     // Buscar la venta por su ID
     const sell = await Sells.findById(sellId);
+    console.log(`Sell found: ${sell}`);
 
     // Verificar si la venta existe
     if (!sell) {
+      console.log('Venta no encontrada');
       return res.status(404).json({ message: 'Venta no encontrada' });
     }
 
     // Verificar si la venta ya está saldada
     if (sell.payCondition !== 'current_account') {
+      console.log('La venta no está asociada a una cuenta corriente');
       return res.status(400).json({ message: 'La venta no está asociada a una cuenta corriente' });
     }
+
+    // Obtener el cliente asociado a la venta
+    const customerName = sell.customer; // Asegúrate de que sell tiene una propiedad customer
+    console.log(`Searching for customer with name: ${customerName} in collection: ${customerCollectionName}`);
+    const customer = await Customers.findOne({ customer_name: customerName });
+    console.log(`Customer found: ${customer}`);
+
+    if (!customer) {
+      console.log('Cliente no encontrado');
+      return res.status(404).json({ message: 'Cliente no encontrado' });
+    }
+
+    // Verificar que el carrito de la cuenta actual exista
+    if (!customer.current_account_cart) {
+      console.log('El carrito de la cuenta actual no existe');
+      return res.status(400).json({ message: 'El carrito de la cuenta actual no existe' });
+    }
+
+    // Obtener el carrito de la venta
+    const sellCart = sell.cart; // Asegúrate de que sell tiene una propiedad cart
+    console.log(`Sell cart: ${JSON.stringify(sellCart)}`);
+
+    // Actualizar el current_account_cart del cliente eliminando o ajustando las cantidades de los productos pagados
+    customer.current_account_cart = customer.current_account_cart.reduce((updatedCart, item) => {
+      const sellItem = sellCart.find(sellItem => sellItem.objectId && item.objectId &&
+        sellItem.objectId.toString() === item.objectId.toString());
+
+      if (sellItem) {
+        const newQuantity = item.quantity - sellItem.quantity;
+        if (newQuantity > 0) {
+          updatedCart.push({ ...item, quantity: newQuantity });
+        }
+        // Si la cantidad nueva es 0, no se agrega al carrito actualizado, lo que equivale a eliminar el producto
+      } else {
+        updatedCart.push(item);
+      }
+
+      return updatedCart;
+    }, []);
+
+    console.log(`Updated current account cart: ${JSON.stringify(customer.current_account_cart)}`);
+
+    // Guardar los cambios en el cliente
+    await customer.save();
 
     // Actualizar el campo payCondition a 'cash' (efectivo)
     sell.payCondition = 'cash';
 
-    // Guardar los cambios
+    // Guardar los cambios en la venta
     await sell.save();
 
     // Respuesta exitosa
@@ -175,6 +225,8 @@ export const payOffSell = async (req, res) => {
     res.status(500).json({ message: 'Error al saldar la venta' });
   }
 };
+
+
 
 export const deleteSellById = async (req, res) => {
   const collectionName = req.params.company + "-sells";

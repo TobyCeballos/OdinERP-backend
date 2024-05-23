@@ -283,7 +283,11 @@ export const bulkUpdateProducts = async (req, res) => {
   const file = req.files.file;
   const salePrice = req.body.sale_price;
   const productProvider = req.body.product_provider;
-
+  
+  const vatValue = parseFloat(req.body.vat_value) || 0;
+  const discount = parseFloat(req.body.discount) || 0;
+  console.log("descuento: " + req.body.discount)
+  console.log("iva: " + req.body.vat_value)
   try {
     const workbook = XLSX.read(file.data, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
@@ -310,6 +314,11 @@ export const bulkUpdateProducts = async (req, res) => {
         io.emit('progress', { progress });
       }
 
+      // Calcular el precio actual con el IVA y el descuento
+      const currentPrice = parseFloat(product.current_price) || 0;
+      const currentPriceWithVAT = currentPrice * (1 + vatValue / 100);
+      const finalSalePrice = currentPriceWithVAT * (1 - discount / 100);
+
       return {
         updateOne: {
           filter: { product_name: product.product_name.toLowerCase() },
@@ -317,7 +326,7 @@ export const bulkUpdateProducts = async (req, res) => {
             $set: {
               product_id: productIdToUse,
               provider_product_id: product.provider_product_id,
-              current_price: product.current_price,
+              current_price: finalSalePrice,
               sale_price: salePrice || 0,
               product_provider: productProvider || "prov",
               purchase_price: product.purchase_price || 0,

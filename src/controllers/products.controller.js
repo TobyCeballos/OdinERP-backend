@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import productSchema from "../models/Product.js";
 import { io } from "../../index.js"; // Importa io desde app.js
-import XLSX from 'xlsx';
+import XLSX from "xlsx";
 
 export const createProduct = async (req, res) => {
   const collectionName = req.params.company + "-products";
@@ -76,12 +76,10 @@ export const createProduct = async (req, res) => {
     }
   } catch (error) {
     console.error("Error al crear o actualizar el producto:", error);
-    return res
-      .status(500)
-      .json({
-        message: "Error al crear o actualizar el producto",
-        error: error,
-      });
+    return res.status(500).json({
+      message: "Error al crear o actualizar el producto",
+      error: error,
+    });
   }
 };
 
@@ -97,54 +95,66 @@ export const getProductById = async (req, res) => {
 };
 export const searchProducts = async (req, res) => {
   const collectionName = req.params.company + "-products";
-
   const Product = mongoose.model("Product", productSchema, collectionName);
 
   try {
-    const query = await req.params.data;
-    if (query) {
-      const results = await Product.find({
-        $or: [
-          { product_name: { $regex: new RegExp(query, "i") } },
-          { brand: { $regex: new RegExp(query, "i") } },
-          { provider_product_id: { $regex: new RegExp(query, "i") } },
-        ],
-      })
-        .select({ __v: 0 })
-        .limit(15);
-      res.json(results);
-    } else {
-      try {
-        const products = await Product.find();
-        return res.json(products);
-      } catch (error) {
-        return res
-          .status(500)
-          .json({ message: "Error al obtener productos", error: error });
-      }
-    }
+    const query = req.params.data;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 20;
+    const skip = (page - 1) * pageSize;
+
+    const searchQuery = query
+      ? {
+          $or: [
+            { product_name: { $regex: new RegExp(query, "i") } },
+            { brand: { $regex: new RegExp(query, "i") } },
+            { provider_product_id: { $regex: new RegExp(query, "i") } },
+          ],
+        }
+      : {};
+
+    const results = await Product.find(searchQuery)
+      .select({ __v: 0 })
+      .skip(skip)
+      .limit(pageSize);
+
+    const totalResults = await Product.countDocuments(searchQuery);
+
+    res.json({
+      results,
+      totalPages: Math.ceil(totalResults / pageSize),
+      currentPage: page,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error al buscar productos" });
   }
 };
+
 export const getProducts = async (req, res) => {
   const collectionName = req.params.company + "-products";
-
   const Product = mongoose.model("Product", productSchema, collectionName);
-  //await deleteProducts(collectionName)
+
   try {
-    const page = req.query.page || 1;
-    const pageSize = 20;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 20;
     const skip = (page - 1) * pageSize;
+
     const products = await Product.find().skip(skip).limit(pageSize);
-    return res.json(products);
+    const totalProducts = await Product.countDocuments();
+
+    return res.json({
+      products,
+      totalPages: Math.ceil(totalProducts / pageSize),
+      currentPage: page,
+    });
   } catch (error) {
     return res
       .status(500)
-      .json({ message: "Error al obtener productos", error: error });
+      .json({ message: "Error al obtener productos", error });
   }
 };
+
 export const updateProductByIdOnBuy = async (req, res) => {
   const collectionName = req.params.company + "-products";
 
@@ -253,65 +263,73 @@ export const updateProductById = async (req, res) => {
   }
 };
 
-const deleteProducts = async({ collectionName }) => {
+const deleteProducts = async ({ collectionName }) => {
   const Product = mongoose.model("Product", productSchema, collectionName);
 
-
-await Product.deleteMany({
-  
-product_id: {
-    $gte: 13185,
-    $lte: 14441
-  }
-}).then(result => {
-  console.log(result.deletedCount + " documentos eliminados");
-}).catch(err => {
-  console.error(err);
-});
-
+  await Product.deleteMany({
+    product_id: {
+      $gte: 13185,
+      $lte: 14441,
+    },
+  })
+    .then((result) => {
+      console.log(result.deletedCount + " documentos eliminados");
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 
   console.log("Product deleted");
 };
 export const bulkUpdateProducts = async (req, res) => {
   const collectionName = req.params.company + "-products";
-  const Product = mongoose.model('Product', productSchema, collectionName);
+  const Product = mongoose.model("Product", productSchema, collectionName);
 
   if (!req.files || !req.files.file) {
-    return res.status(400).json({ message: 'No se ha subido ningún archivo' });
+    return res.status(400).json({ message: "No se ha subido ningún archivo" });
   }
 
   const file = req.files.file;
   const salePrice = req.body.sale_price;
   const productProvider = req.body.product_provider;
-  
+
   const vatValue = parseFloat(req.body.vat_value) || 0;
   const discount = parseFloat(req.body.discount) || 0;
-  console.log("descuento: " + req.body.discount)
-  console.log("iva: " + req.body.vat_value)
+  console.log("descuento: " + req.body.discount);
+  console.log("iva: " + req.body.vat_value);
   try {
-    const workbook = XLSX.read(file.data, { type: 'buffer' });
+    const workbook = XLSX.read(file.data, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-    const existingProducts = await Product.find({ product_name: { $in: jsonData.map(product => product.product_name.toLowerCase()) } });
+    const existingProducts = await Product.find({
+      product_name: {
+        $in: jsonData.map((product) => product.product_name.toLowerCase()),
+      },
+    });
 
     const existingProductsDict = existingProducts.reduce((dict, product) => {
       dict[product.product_name.toLowerCase()] = product;
       return dict;
     }, {});
 
-    const highestProduct = await Product.findOne({}, { product_id: 1 }).sort({ product_id: -1 }).limit(1);
+    const highestProduct = await Product.findOne({}, { product_id: 1 })
+      .sort({ product_id: -1 })
+      .limit(1);
     let newProductId = highestProduct ? highestProduct.product_id + 1 : 1;
 
     const bulkOperations = jsonData.map((product, index) => {
-      const existingProduct = existingProductsDict[product.product_name.toLowerCase()];
-      const productIdToUse = existingProduct ? existingProduct.product_id : newProductId++;
+      const existingProduct =
+        existingProductsDict[product.product_name.toLowerCase()];
+      const productIdToUse = existingProduct
+        ? existingProduct.product_id
+        : newProductId++;
 
       // Emitir progreso cada 10 productos
       if (index % 10 === 0) {
         const progress = Math.round((index / jsonData.length) * 100);
-        io.emit('progress', { progress });
+        io.emit("progress", { progress });
       }
 
       // Calcular el precio actual con el IVA y el descuento
@@ -351,7 +369,7 @@ export const bulkUpdateProducts = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: 'Error al realizar la actualización masiva',
+      message: "Error al realizar la actualización masiva",
       error: error.message,
     });
   }

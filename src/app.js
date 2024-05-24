@@ -14,6 +14,7 @@ import purchaseRoutes from "./routes/purchase.routes.js";
 import usersRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
+import calendarRoutes from "./routes/calendar.routes.js";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api", indexRoutes);
 
 app.use('/api/chat', chatRoutes);
+app.use('/api/calendar', calendarRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/providers", providersRoutes);
